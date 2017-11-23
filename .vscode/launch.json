@@ -1,0 +1,31 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+            
+            {
+                "type": "node2",
+                "request": "launch",
+                "name": "Test SVN",
+                "outFiles": [
+                    "${workspaceRoot}/dist/**/*.js"
+                ],
+                "preLaunchTask": "RebuildTypeScript",
+                "program": "${workspaceRoot}/src/test/test.ts",
+                "cwd":"${workspaceRoot}",               
+                "sourceMaps": true
+            },
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "Debug",
+                "outFiles": [
+                    "${workspaceRoot}/dist/**/*.js"
+                ],
+                "preLaunchTask": "RebuildTypeScript",
+                "program": "${workspaceRoot}/src/hello.ts",
+                "cwd":"${workspaceRoot}",               
+                "sourceMaps": true
+            }
+            
+        ]
+    }

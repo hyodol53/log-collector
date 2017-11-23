@@ -1,0 +1,25 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "",
+  "main": "../dist/testSVN.js",
+  "dependencies": {
+    "@types/lodash": "^4.14.85",
+    "@types/node": "^8.0.53",
+    "diffparser": "^2.0.0",
+    "simple-git": "^1.82.0",
+    "sqlite": "^2.8.0",
+    "svn-spawn": "^0.1.5",
+    "tsd": "^0.6.5",
+    "typescript": "^2.5.2",
+    "unidiff": "0.0.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "start": "node ./dist/test/test.js",
+    "transpile": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
