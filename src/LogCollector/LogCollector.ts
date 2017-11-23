@@ -2,6 +2,7 @@ import * as async from "async";
 import * as repo from "./client";
 import ClientInfo from "./client";
 import SourceRange from "./SourceRange";
+import SimpleRange from "./SimpleRange";
 import SCM from "./scm/scm";
 import SVN from "./scm/svn";
 import GIT from "./scm/git";
@@ -21,11 +22,11 @@ export default class LogCollector {
         }
     }
 
-    public getLogWithRange(localPath: string, range: SourceRange, length: number ,
+    public getLogWithRange(localPath: string, range: SimpleRange, length: number ,
                            callback: (err: string|null, revisions: string[]) => void ) {
         this._currentRevision = "-1";
         this._revInfo = new Map<string, SourceRange>();
-        this._localSourceRange = range;
+        this._localSourceRange = new SourceRange(range.startLine, range.endLine);
         this._localPath = localPath;
         this.getLocalFileDiff(this._localPath, (errDiff: string|null, diffStr: string) => {
             if ( errDiff === null ) {

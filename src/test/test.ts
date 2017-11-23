@@ -1,10 +1,8 @@
 import LogCollector from "./../LogCollector/LogCollector";
-import SourceRange from "./../LogCollector/SourceRange";
 
 const gitCollector = new LogCollector({username: "hjjang", password: "1234", kind: "git"});
-const range: SourceRange = new SourceRange(51, 57);
 const sourcePath: string = "E:/src/역량강화/electron/electron-quick-start/main.js";
-gitCollector.getLogWithRange(sourcePath, range, 100, (err: string|null, revs: string[]) => {
+gitCollector.getLogWithRange(sourcePath, {startLine: 51, endLine: 57}, 100, (err: string|null, revs: string[]) => {
     if ( err !== null ) {
         console.log(err);
     } else {
@@ -12,10 +10,9 @@ gitCollector.getLogWithRange(sourcePath, range, 100, (err: string|null, revs: st
     }
 });
 
-const svnRange: SourceRange = new SourceRange(143, 159);
 const svnSourcePath: string = "E:/src/trunk/src/ci/IPA/CiPa.cpp";
 const svnCollector = new LogCollector({username: "hjjang", password: "1234", kind: "svn"});
-svnCollector.getLogWithRange(svnSourcePath, svnRange, 10, (err: string|null, revs: string[]) => {
+svnCollector.getLogWithRange(svnSourcePath,  {startLine: 143, endLine: 159}, 10, (err: string|null, revs: string[]) => {
     if ( err !== null ) {
         console.log(err);
     } else {
