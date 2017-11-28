@@ -3,9 +3,9 @@
 This library can get revisions that specific range of local source file.
 
 # installation
-'''
+```
 npm install log-collector
-'''
+```
 
 # usage
 
