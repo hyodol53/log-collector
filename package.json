@@ -1,25 +1,29 @@
 {
-  "name": "test",
+  "name": "log-collector",
   "version": "1.0.0",
   "description": "",
-  "main": "../dist/testSVN.js",
+  "main": "./dist/index.js",
   "dependencies": {
-    "@types/lodash": "^4.14.85",
-    "@types/node": "^8.0.53",
     "diffparser": "^2.0.0",
     "simple-git": "^1.82.0",
-    "sqlite": "^2.8.0",
+    "sqlite3": "^3.1.13",
     "svn-spawn": "^0.1.5",
-    "tsd": "^0.6.5",
-    "typescript": "^2.5.2",
     "unidiff": "0.0.4"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hyodol53/LogCollector"
+  },
   "devDependencies": {},
+  "engines": {
+    "node": ">= 6.11.2"
+  },
   "scripts": {
     "start": "node ./dist/test/test.js",
     "transpile": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC"
+  "author": "hyojae",
+  "license": "MIT", 
+  "keywords": ["svn", "log", "revision", "function history", "git", "line"]
 }
