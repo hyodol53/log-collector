@@ -4,6 +4,7 @@ This library can get revisions that specific range of local source file.
 
 # usage
 
+javascript
 ```javascript
 var logCollector = require("log-collector");
 var git = new logCollector({ username:"name", password:"pw", kind: "git"});
@@ -19,6 +20,7 @@ git.getLogWithRange(sourcePath, { startLine: 51, endLine: 57 }, 100, function (e
 });
 ```
 
+typescript
 ```typescript
 import LogCollector = require("log-collector");
 
