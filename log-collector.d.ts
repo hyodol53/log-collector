@@ -21,6 +21,6 @@ declare namespace Log {
 }
 
 declare module 'log-collector' {
-        const logCollector: typeof Log.LogCollector;
-        export = logCollector;   
+    const logCollector: typeof Log.LogCollector;
+    export = logCollector;   
 }
