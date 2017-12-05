@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var async = require("async");
+var Translator_1 = require("./Translator");
 var SourceRange_1 = require("./SourceRange");
+var scm_1 = require("./scm/scm");
 var svn_1 = require("./scm/svn");
 var git_1 = require("./scm/git");
 var diffParser = require("diffParser");
@@ -15,6 +17,9 @@ var LogCollector = /** @class */ (function () {
             this._scm = new git_1.default(_client);
         }
     }
+    LogCollector.getSCMKind = function (localPath) {
+        return scm_1.default.getSCMKind(localPath);
+    };
     LogCollector.prototype.getLogWithRange = function (localPath, range, length, callback) {
         var _this = this;
         this._currentRevision = "-1";
@@ -45,6 +50,16 @@ var LogCollector = /** @class */ (function () {
     LogCollector.prototype.getDiff = function (localPath, revision, callback) {
         this._scm.getDiff(localPath, revision, function (err, diffStr) {
             callback(err, diffStr);
+        });
+    };
+    LogCollector.prototype.getRevisionInfo = function (localPath, revision, callback) {
+        this._scm.getRevisionInfo(localPath, revision, function (err, revInfo) {
+            if (err !== null) {
+                callback(err, null);
+            }
+            else {
+                callback(null, revInfo);
+            }
         });
     };
     LogCollector.prototype.getLocalFileDiff = function (localPath, callback) {
@@ -82,7 +97,6 @@ var LogCollector = /** @class */ (function () {
                         else {
                             revs.splice(revs.length - 1, 1);
                             revLength--;
-                            console.log(err);
                         }
                     });
                 };
@@ -106,7 +120,7 @@ var LogCollector = /** @class */ (function () {
                         continue;
                     }
                     var chunks = diffParser(diffsByRev.get(rev))[0].chunks;
-                    var translatedResult = _this.translateSourceRangeFromDiff(range, chunks);
+                    var translatedResult = Translator_1.default.translateSourceRangeFromDiff(range, chunks);
                     var translatedRange = translatedResult[0];
                     if (translatedRange.isNull()) {
                         break;
@@ -123,53 +137,6 @@ var LogCollector = /** @class */ (function () {
         async.waterfall(tasks, function (err, result) {
             callback(err, result);
         });
-    };
-    LogCollector.prototype.translateSourceRangeFromDiff = function (range, chunks) {
-        var startIndex = 0;
-        var endIndex = 0;
-        var isUnknown = false;
-        var isChanged = false;
-        for (var _i = 0, chunks_1 = chunks; _i < chunks_1.length; _i++) {
-            var chunk = chunks_1[_i];
-            if (isUnknown === true) {
-                break;
-            }
-            var lineInfo = chunk.changes;
-            for (var _a = 0, lineInfo_1 = lineInfo; _a < lineInfo_1.length; _a++) {
-                var line = lineInfo_1[_a];
-                if (line.type === "del") {
-                    if (range.startLine > line.oldLine) {
-                        startIndex--;
-                        endIndex--;
-                    }
-                    else if (range.endLine > line.oldLine) {
-                        endIndex--;
-                        isChanged = true;
-                    }
-                }
-                else if (line.type === "add") {
-                    if (range.startLine + startIndex === 1 &&
-                        range.startLine + startIndex === range.endLine + endIndex) {
-                        isUnknown = true;
-                        break;
-                    }
-                    if (range.startLine + startIndex >= line.newLine) {
-                        startIndex++;
-                        endIndex++;
-                    }
-                    else if (range.endLine + endIndex >= line.newLine) {
-                        endIndex++;
-                        isChanged = true;
-                    }
-                }
-            }
-        }
-        var translatedRange = new SourceRange_1.default(-1, -1);
-        if (!isUnknown) {
-            translatedRange.startLine = range.startLine + startIndex;
-            translatedRange.endLine = range.endLine + endIndex;
-        }
-        return [translatedRange, isChanged];
     };
     LogCollector.prototype.getPreviousSourceRange = function (prevRevision) {
         var range = new SourceRange_1.default(-1, -1);

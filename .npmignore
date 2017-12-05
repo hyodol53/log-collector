@@ -5,3 +5,5 @@ node_modules/
 tsconfig.json
 tslint.json
 README.md
+dist/test
+dist/lib

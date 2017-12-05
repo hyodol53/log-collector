@@ -16,6 +16,7 @@ var SCM_1 = require("./SCM");
 var Client = require("svn-spawn");
 var SQLite = require("sqlite3");
 var Util = require("../util/util");
+var RevisionInfo_1 = require("../RevisionInfo");
 var SVN = /** @class */ (function (_super) {
     __extends(SVN, _super);
     function SVN(_client) {
@@ -26,6 +27,7 @@ var SVN = /** @class */ (function (_super) {
             password: _this._client.password,
             username: _this._client.username,
         });
+        _this._rootURL = "";
         _this._repoPathInfo = new Map();
         return _this;
     }
@@ -82,7 +84,6 @@ var SVN = /** @class */ (function (_super) {
                 if (Util.existDirectory(dirPath) === true) {
                     var tempPath_1 = path.join(dirPath, "temp" + Math.random().toString());
                     _this._spawnClient.cmd(["export", repoPath, tempPath_1], function (err, data) {
-                        console.log(data);
                         if (err === null) {
                             Util.getDiff(localPath, tempPath_1, function (err2, result) {
                                 fs.unlinkSync(tempPath_1);
@@ -101,24 +102,82 @@ var SVN = /** @class */ (function (_super) {
             }
         });
     };
+    SVN.prototype.getRevisionInfo = function (localPath, revName, callback) {
+        var _this = this;
+        var mainPath = this.getMainPath(localPath);
+        this.getRootURL(localPath, function (err, url) {
+            if (err !== null) {
+                callback("Could not get Repository Path", null);
+            }
+            else {
+                _this._spawnClient.getLog([url, "-r", revName], function (errLog, data) {
+                    if (errLog === null) {
+                        var logData_1 = data[0];
+                        _this.getDiff(localPath, revName, function (errMsg, diffStr) {
+                            if (errMsg !== null) {
+                                callback(errMsg, null);
+                            }
+                            else {
+                                callback(errMsg, new RevisionInfo_1.default(revName, logData_1.author, logData_1.msg, logData_1.date, diffStr));
+                            }
+                        });
+                    }
+                    else {
+                        callback(errLog.message, null);
+                    }
+                });
+            }
+        });
+    };
+    SVN.prototype.getRootURL = function (localPath, callback) {
+        var _this = this;
+        if (this._rootURL === "") {
+            var mainPath = this.getMainPath(localPath);
+            if (mainPath === "") {
+                callback("Could not get Repository Path", "");
+            }
+            var dbPath = path.join(mainPath, "wc.db");
+            var repoPath = (path.resolve(localPath).replace(path.resolve(mainPath, ".."), "")).
+                substr(1).split("\\").join("/");
+            var query_1 = "select (R.root) as Path \
+            from NODES as N, REPOSITORY as R \
+            where R.id = N.repos_id AND N.local_relpath = \"" + repoPath + "\"";
+            var db_1 = new SQLite.Database(dbPath, function (err) {
+                db_1.on("open", function () {
+                    db_1.each(query_1, function (queryErr, row) {
+                        if (queryErr === null) {
+                            _this._repoPathInfo.set(localPath, row.Path);
+                            _this._rootURL = row.path;
+                            callback(null, row.Path);
+                        }
+                        else {
+                            callback("Could not get Repository Path", "");
+                        }
+                    });
+                });
+            });
+        }
+        else {
+            callback(null, this._rootURL);
+        }
+    };
     SVN.prototype.getRepositoryPath = function (localPath, callback) {
         var _this = this;
         var fullRepoPath = this._repoPathInfo.get(localPath);
         if (fullRepoPath === undefined) {
-            var mainPath = this.getRepositoryMainPath(localPath);
+            var mainPath = this.getMainPath(localPath);
             if (mainPath === "") {
                 callback("");
             }
             var repoPath = (path.resolve(localPath).replace(path.resolve(mainPath, ".."), "")).
                 substr(1).split("\\").join("/");
             var dbPath = path.join(mainPath, "wc.db");
-            var query_1 = "select (R.root || \"/\" || N.repos_path) as Path \
+            var query_2 = "select (R.root || \"/\" || N.repos_path) as Path \
                            from NODES as N, REPOSITORY as R \
                            where R.id = N.repos_id AND N.local_relpath = \"" + repoPath + "\"";
-            console.log(query_1);
-            var db_1 = new SQLite.Database(dbPath, function (err) {
-                db_1.on("open", function () {
-                    db_1.each(query_1, function (queryErr, row) {
+            var db_2 = new SQLite.Database(dbPath, function (err) {
+                db_2.on("open", function () {
+                    db_2.each(query_2, function (queryErr, row) {
                         if (queryErr === null) {
                             _this._repoPathInfo.set(localPath, row.Path);
                             callback(row.Path);
