@@ -1,6 +1,7 @@
 import ClientInfo from "../client";
 import path = require("path");
 import * as Util from "../util/util";
+import RevisionInfo from "../RevisionInfo";
 
 export default abstract class SCM {
     public static getSCMKind(localPath: string) {
@@ -46,6 +47,8 @@ export default abstract class SCM {
     public abstract getLocalFileDiff(localPath: string,
                                      callback: (err: string|null, diffStr: string) => void): void;
 
+    public abstract getRevisionInfo(localPath: string, revName: string,
+                                    callback: (err: string|null, revisionInfo: RevisionInfo|null) => void ): void;
 
     protected getMainPath(localPath: string) {
         let dirName: string;

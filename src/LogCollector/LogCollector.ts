@@ -4,6 +4,7 @@ import Translator from "./Translator";
 import ClientInfo from "./client";
 import SourceRange from "./SourceRange";
 import SimpleRange from "./SimpleRange";
+import RevisionInfo from "./RevisionInfo";
 import SCM from "./scm/scm";
 import SVN from "./scm/svn";
 import GIT from "./scm/git";
@@ -59,6 +60,17 @@ export default class LogCollector {
     public getDiff(localPath: string, revision: string, callback: (err: string|null, diffStr: string) => void): void {
         this._scm.getDiff(localPath, revision, (err: string|null, diffStr: string ) => {
             callback(err, diffStr);
+        });
+    }
+
+    public getRevisionInfo(localPath: string, revision: string,
+                           callback: (err: string|null, revInfo: RevisionInfo|null) => void ): void {
+        this._scm.getRevisionInfo(localPath, revision, (err: any, revInfo: RevisionInfo|null) => {
+            if ( err !== null ) {
+                callback(err, null);
+            } else {
+                callback(null, revInfo);
+            }
         });
     }
 

@@ -4,8 +4,10 @@ import LogCollector from "./../LogCollector/LogCollector";
 import SCM from "./../LogCollector/scm/scm";
 import Translator from "./../LogCollector/Translator";
 import SourceRange from "../LogCollector/SourceRange";
+import GIT from "./../LogCollector/scm/git";
+import RevisionInfo from "../LogCollector/RevisionInfo";
 
-const localRepoPath = "E:/src/역량강화/log-collector-test/";
+const localRepoPath = "E:/src/역량강화/log-collector-test";
 
 describe("integration", () => {
     it ( "get logs with range", () => {
@@ -20,8 +22,8 @@ describe("integration", () => {
         "58432febe06ae138536391a627521711f4f01a4f",
         ];
 
-        const gitCollector = new LogCollector({username: "hjjang", password: "1234", kind: "git"});
-        const sourcePath: string = localRepoPath + "test.js";
+        const gitCollector = new LogCollector({kind: "git"});
+        const sourcePath: string = localRepoPath + "/test.js";
         gitCollector.getLogWithRange(sourcePath, {startLine: 12, endLine: 17}, 100,
                                      (err: string|null, revs: string[]) => {
         expect(err).to.equal(null);
@@ -30,6 +32,19 @@ describe("integration", () => {
         for ( let i = 0; i < oracle.length; i++) {
         expect(revs[i]).to.equal(oracle[i]);
         }
+        });
+    });
+    it ( "get revision Info ", () => {
+        const gitCollector = new LogCollector({kind: "git"});
+        const sourcePath: string = localRepoPath + "/test.js";
+        gitCollector.getRevisionInfo(sourcePath, "b513532ae46a3838d917d83b3df6e6e1fd71e183",
+        (err: any, result: RevisionInfo|null ) => {
+            expect(err).to.equal(null);
+            if ( result !== null ) {
+                expect(result.author).to.equal("Hyojae <hjjang@suresofttech.com>");
+                expect(result.message).to.equal("modify testFunc, testFunc2, testFunc3");
+                expect(result.date).to.equal("Mon Dec 4 12:00:39 2017 +0900");
+            }
         });
     });
 });
@@ -73,11 +88,38 @@ describe("translator", () => {
 
 describe("scm kind", () => {
     it ( "get git kind", () => {
-        const localPath: string = localRepoPath + "testGIT/testGIT.js";
+        const localPath: string = localRepoPath + "/testGIT/testGIT.js";
         expect(SCM.getSCMKind(localPath)).to.equal("git");
     });
     it ( "get svn kind", () => {
-        const localPath: string = localRepoPath + "testSVN/src/testSVN.js";
+        const localPath: string = localRepoPath + "/testSVN/src/testSVN.js";
         expect(SCM.getSCMKind(localPath)).to.equal("svn");
+    });
+});
+
+describe("git log info", () => {
+    it ( "get rev Info 1", () => {
+        const git = new GIT({kind: "git"});
+        git.getRevisionInfo(localRepoPath + "/test.js", "b513532ae46a3838d917d83b3df6e6e1fd71e183",
+                            (err: any, result: RevisionInfo|null ) => {
+            expect(err).to.equal(null);
+            if ( result !== null ) {
+                expect(result.author).to.equal("Hyojae <hjjang@suresofttech.com>");
+                expect(result.message).to.equal("modify testFunc, testFunc2, testFunc3");
+                expect(result.date).to.equal("Mon Dec 4 12:00:39 2017 +0900");
+            }
+        });
+    });
+    it ( "get rev Info 2", () => {
+        const git = new GIT({kind: "git"});
+        git.getRevisionInfo(localRepoPath + "/test.js", "afe6f4c6ba6ee65630ee956b41d980aea794f14d",
+                                (err: any, result: RevisionInfo|null ) => {
+            expect(err).to.equal(null);
+            if ( result !== null ) {
+                expect(result.author).to.equal("Hyojae <hjjang@suresofttech.com>");
+                expect(result.message).to.equal("modify testFunc");
+                expect(result.date).to.equal("Mon Dec 4 11:58:13 2017 +0900");
+            }
+        });
     });
 });

@@ -5,7 +5,7 @@ declare namespace Log {
         public getNextLogWithRange(length: number, callback: (err: string|null, revisions: string[]) => void ): void;
         public getLog(localPath: string, length: number, callback: (err: string|null, revisions: string[]) => void): void;
         public getDiff(localPath: string, revision: string, callback: (err: string|null, diffStr: string) => void): void;
-    
+        public getRevisionInfo(localPath: string, revision: string, callback: (err: string|null, revInfo: RevisionInfo) => void): void;
     }
     
     class SimpleRange {
@@ -17,6 +17,14 @@ declare namespace Log {
         public kind: string;
         public username?: string;
         public password?: string;
+    }
+
+    class RevisionInfo {
+        public name: string;
+        public author: string;
+        public message: string;
+        public date: string;
+        public diff: string;
     }
 }
 

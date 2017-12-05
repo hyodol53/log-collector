@@ -8,6 +8,7 @@ declare namespace simple_git {
 
         diff( options: string[] , callback: (err: any, result: any)=>void ): any
         log( options: string[] , callback: (err: any, result: any)=>void ): any        
+        show ( options: string[] , callback: (err: any, result: any)=>void): any
     }
 
 }
