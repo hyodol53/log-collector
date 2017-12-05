@@ -78,7 +78,9 @@ export default class SVN extends SCM {
                                 callback(err2, result);
                             });
                         } else {
-                            fs.unlinkSync(tempPath);
+                            if ( fs.existsSync(tempPath) === true ) {
+                                fs.unlinkSync(tempPath);
+                            }
                             callback("svn export failed : " + err.message, "");
                         }
                     });
