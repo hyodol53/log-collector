@@ -91,7 +91,9 @@ var SVN = /** @class */ (function (_super) {
                             });
                         }
                         else {
-                            fs.unlinkSync(tempPath_1);
+                            if (fs.existsSync(tempPath_1) === true) {
+                                fs.unlinkSync(tempPath_1);
+                            }
                             callback("svn export failed : " + err.message, "");
                         }
                     });
