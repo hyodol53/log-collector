@@ -10,7 +10,7 @@ export default class GIT extends SCM {
 
     public getLog(localPath: string, length: number,
                   callback: (errMsg: string|null, revisions: string[]) => void) {
-        const mainPath: string = this.getRepositoryMainPath(localPath);
+        const mainPath: string = this.getMainPath(localPath);
         if ( mainPath === "" ) {
             callback("Could not get git base dif", []);
         }
@@ -33,7 +33,7 @@ export default class GIT extends SCM {
     }
     public getDiff(localPath: string, revision: string,
                    callback: (errMsg: string|null, diffStr: string) => void) {
-        const mainPath: string = this.getRepositoryMainPath(localPath);
+        const mainPath: string = this.getMainPath(localPath);
         if ( mainPath === "" ) {
             callback("Could not get git base dif", "");
         }
@@ -53,7 +53,7 @@ export default class GIT extends SCM {
     }
     public getLocalFileDiff(localPath: string,
                             callback: (err: string|null, diffStr: string) => void) {
-        const mainPath: string = this.getRepositoryMainPath(localPath);
+        const mainPath: string = this.getMainPath(localPath);
         if ( mainPath === "" ) {
             callback("Could not get git base dif", "");
         }

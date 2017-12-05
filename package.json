@@ -1,6 +1,6 @@
 {
   "name": "log-collector",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "",
   "main": "./dist/index.js",
   "dependencies": {
@@ -14,16 +14,29 @@
     "type": "git",
     "url": "https://github.com/hyodol53/LogCollector"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "ts-node": "^3.3.0",
+    "@types/chai": "^4.0.7",
+    "@types/mocha": "^2.2.44",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
+  },
   "engines": {
     "node": ">= 6.11.2"
   },
   "scripts": {
     "start": "node ./dist/test/test.js",
     "transpile": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha -r ts-node/register src/test/test.ts"
   },
   "author": "hyojae",
-  "license": "MIT", 
-  "keywords": ["svn", "log", "revision", "function history", "git", "line"]
+  "license": "MIT",
+  "keywords": [
+    "svn",
+    "log",
+    "revision",
+    "function history",
+    "git",
+    "line"
+  ]
 }

@@ -69,7 +69,6 @@ export default class SVN extends SCM {
                     const tempPath: string = path.join(dirPath, "temp" + Math.random().toString());
                     this._spawnClient.cmd([ "export", repoPath, tempPath] ,
                     (err: SVNError, data: any) => {
-                        console.log(data);
                         if ( err === null ) {
                             Util.getDiff(localPath, tempPath, (err2: string|null, result: string) => {
                                 fs.unlinkSync(tempPath);
@@ -90,7 +89,7 @@ export default class SVN extends SCM {
     private getRepositoryPath(localPath: string, callback: (result: string) => void ) {
         const fullRepoPath: any = this._repoPathInfo.get(localPath);
         if ( fullRepoPath === undefined ) {
-            const mainPath: string = this.getRepositoryMainPath(localPath);
+            const mainPath: string = this.getMainPath(localPath);
             if ( mainPath === "" ) {
                 callback("");
             }
@@ -100,7 +99,6 @@ export default class SVN extends SCM {
             const query: string = "select (R.root || \"/\" || N.repos_path) as Path \
                            from NODES as N, REPOSITORY as R \
                            where R.id = N.repos_id AND N.local_relpath = \"" + repoPath + "\"";
-            console.log(query);
             const db = new SQLite.Database(dbPath, (err: Error) => {
                 db.on("open", () => {
                     db.each(query, (queryErr: any, row: any) => {

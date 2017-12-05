@@ -1,5 +1,6 @@
 import * as async from "async";
 import * as repo from "./client";
+import Translator from "./Translator";
 import ClientInfo from "./client";
 import SourceRange from "./SourceRange";
 import SimpleRange from "./SimpleRange";
@@ -9,6 +10,10 @@ import GIT from "./scm/git";
 import * as diffParser from "diffParser";
 
 export default class LogCollector {
+    public static getSCMKind(localPath: string) {
+        return SCM.getSCMKind(localPath);
+    }
+
     private _scm: SCM;
     private _revInfo: Map<string, SourceRange>;
     private _currentRevision: string;
@@ -90,7 +95,6 @@ export default class LogCollector {
                         } else {
                             revs.splice(revs.length - 1, 1);
                             revLength--;
-                            console.log(err);
                         }
                     });
                 }
@@ -108,8 +112,8 @@ export default class LogCollector {
                         this._revInfo.set(prevRevision, range);
                         continue;
                     }
-                    const chunks: any[] = diffParser(diffsByRev.get(rev))[0].chunks;
-                    const translatedResult = this.translateSourceRangeFromDiff(range, chunks);
+                    const chunks: Chunk[] = diffParser(diffsByRev.get(rev))[0].chunks;
+                    const translatedResult = Translator.translateSourceRangeFromDiff(range, chunks);
                     const translatedRange = translatedResult[0] as SourceRange;
                     if (translatedRange.isNull() ) {
                         break;
@@ -125,49 +129,6 @@ export default class LogCollector {
         async.waterfall(tasks, (err: string|null, result: any) => {
             callback(err, result);
         });
-    }
-
-    private translateSourceRangeFromDiff(range: SourceRange, chunks: any[]) {
-        let startIndex: number = 0;
-        let endIndex: number = 0;
-        let isUnknown: boolean = false;
-        let isChanged: boolean = false;
-        for ( const chunk of chunks) {
-            if ( isUnknown === true ) {
-                break;
-            }
-            const lineInfo: LineInfo[] = chunk.changes;
-            for ( const line of lineInfo ) {
-                if ( line.type === "del" ) {
-                    if ( range.startLine > line.oldLine ) {
-                        startIndex--;
-                        endIndex--;
-                    } else if ( range.endLine > line.oldLine ) {
-                        endIndex--;
-                        isChanged = true;
-                    }
-                } else if (line.type === "add" ) {
-                    if ( range.startLine + startIndex === 1 &&
-                            range.startLine + startIndex === range.endLine + endIndex ) {
-                        isUnknown = true;
-                        break;
-                    }
-                    if ( range.startLine + startIndex >= line.newLine ) {
-                        startIndex++;
-                        endIndex++;
-                    } else if ( range.endLine + endIndex >= line.newLine ) {
-                        endIndex++;
-                        isChanged = true;
-                    }
-                }
-            }
-        }
-        const translatedRange = new SourceRange(-1, -1);
-        if ( !isUnknown ) {
-            translatedRange.startLine = range.startLine + startIndex;
-            translatedRange.endLine = range.endLine + endIndex;
-        }
-        return [translatedRange, isChanged];
     }
 
     private getPreviousSourceRange(prevRevision: string) {

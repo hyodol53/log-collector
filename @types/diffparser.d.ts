@@ -10,6 +10,11 @@ declare namespace diffparser {
 
 }
 
+declare interface Chunk {
+    readonly changes: LineInfo[];
+}
+
+
 declare interface LineInfo {
     readonly type: string;
     readonly content: string;

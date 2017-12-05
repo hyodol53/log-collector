@@ -3,6 +3,36 @@ import path = require("path");
 import * as Util from "../util/util";
 
 export default abstract class SCM {
+    public static getSCMKind(localPath: string) {
+        const git: string = ".git";
+        const svn: string = ".svn";
+        let dirPath: string = path.dirname(localPath);
+        if ( Util.existDirectory(dirPath) === true ) {
+            let gitPath = path.join(dirPath, git);
+            let svnPath = path.join(dirPath, svn);
+
+            let existGit: boolean = Util.existDirectory(gitPath);
+            let existSvn: boolean = Util.existDirectory(svnPath);
+            while ( !existGit && !existSvn ) {
+                dirPath = path.resolve(dirPath, ".." + path.sep);
+                if ( Util.existDirectory(dirPath) === false ) {
+                    return "";
+                }
+                gitPath = path.join(dirPath, git);
+                svnPath = path.join(dirPath, svn);
+                existGit = Util.existDirectory(gitPath);
+                existSvn = Util.existDirectory(svnPath);
+            }
+            if ( existGit ) {
+                return "git";
+            } else {
+                return "svn";
+            }
+        } else {
+            return "";
+        }
+    }
+
     constructor(protected _client: ClientInfo ) {
 
     }
@@ -16,7 +46,8 @@ export default abstract class SCM {
     public abstract getLocalFileDiff(localPath: string,
                                      callback: (err: string|null, diffStr: string) => void): void;
 
-    protected getRepositoryMainPath(localPath: string) {
+
+    protected getMainPath(localPath: string) {
         let dirName: string;
         if ( this._client.kind === "git" ) {
             dirName = ".git";
@@ -27,15 +58,15 @@ export default abstract class SCM {
         }
         let dirPath: string = path.dirname(localPath);
         if ( Util.existDirectory(dirPath) === true ) {
-            let gitPath = path.join(dirPath, dirName);
-            while ( Util.existDirectory(gitPath) === false ) {
+            let scmPath = path.join(dirPath, dirName);
+            while ( Util.existDirectory(scmPath) === false ) {
                 dirPath = path.resolve(dirPath, ".." + path.sep);
                 if ( Util.existDirectory(dirPath) === false ) {
                     return "";
                 }
-                gitPath = path.join(dirPath, dirName);
+                scmPath = path.join(dirPath, dirName);
             }
-            return gitPath;
+            return scmPath;
         } else {
             return "";
         }
