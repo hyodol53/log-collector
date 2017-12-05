@@ -13,9 +13,8 @@ javascript
 ```javascript
 var logCollector = require("log-collector");
 var gitorsvn = new logCollector({ username:"name", password:"pw", kind: "git or svn"});
-var sourcePath = "localpath";
 
-gitorsvn.getLogWithRange(sourcePath, { startLine: 51, endLine: 57 }, 100, function (err, revs) {
+gitorsvn.getLogWithRange("localpath", { startLine: 51, endLine: 57 }, 100, function (err, revs) {
     if (err !== null) {
         console.log(err);
     }
@@ -23,6 +22,11 @@ gitorsvn.getLogWithRange(sourcePath, { startLine: 51, endLine: 57 }, 100, functi
         console.log(revs);
     }
 });
+
+getorsvn.getRevisionInfo("local path", "revision number", (err , revInfo) => {
+    // get author, date, message, diff from revInfo
+});
+
 ```
 
 typescript
@@ -40,5 +44,10 @@ gitorsvn.getLogWithRange("local path", {startLine: 51, endLine: 57}, 100, (err: 
         // get list of revesion number(svn) or SHA-1(git)
     }
 });
+
+getorsvn.getRevisionInfo("local path", "revision number", (err: string|null, revInfo: RevisionInfo) => {
+    // get author, date, message, diff from revInfo
+});
+
 ```
 
