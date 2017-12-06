@@ -41,6 +41,9 @@ export default abstract class SCM {
     public abstract getLog(localPath: string, length: number,
                            callback: (err: string|null, revisions: string[]) => void): void;
 
+    public abstract getFirstLog(localPath: string,
+                                callback: (err: string|null, rev: string) => void): void;
+
     public abstract getDiff(localPath: string, revision: string,
                             callback: (err: string|null, diffStr: string) => void): void;
 

@@ -33,6 +33,23 @@ export default class GIT extends SCM {
         });
     }
 
+    public getFirstLog(localPath: string,
+                       callback: (err: string|null, rev: string) => void) {
+        const baseDir: string = this.getMainPath(localPath);
+        if ( baseDir === "" ) {
+            callback("Could not get git base dir", "");
+        }
+        const git = new SimpleGit(path.resolve(baseDir, ".."));
+        git.log(["--reverse", "--pretty=oneline", localPath], (err: any, result: any) => {
+            if ( err !== null ) {
+                callback(err, "");
+            } else {
+                const hashs: string = result.all[0].hash;
+                callback(null, hashs.substr(0, hashs.indexOf(" ")));
+            }
+        });
+    }
+
     public getRevisionInfo(localPath: string, revName: string,
                            callback: (err: string|null, revisionInfo: RevisionInfo|null) => void ) {
         const baseDir: string = this.getMainPath(localPath);

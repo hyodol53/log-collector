@@ -7,7 +7,7 @@ import SourceRange from "../LogCollector/SourceRange";
 import GIT from "./../LogCollector/scm/git";
 import RevisionInfo from "../LogCollector/RevisionInfo";
 
-const localRepoPath = "E:/src/역량강화/log-collector-test";
+const localRepoPath = "E:/src/역량강화/log-collector-test"; // clone https://github.com/hyodol53/log-collector-test.git
 
 describe("integration", () => {
     it ( "get logs with range", () => {
@@ -25,12 +25,11 @@ describe("integration", () => {
         const gitCollector = new LogCollector({kind: "git"});
         const sourcePath: string = localRepoPath + "/test.js";
         gitCollector.getLogWithRange(sourcePath, {startLine: 12, endLine: 17}, 100,
-                                     (err: string|null, revs: string[]) => {
+                                     (err: string|null, revs: RevisionInfo[]) => {
         expect(err).to.equal(null);
-
         expect(revs.length).to.equal(oracle.length);
         for ( let i = 0; i < oracle.length; i++) {
-        expect(revs[i]).to.equal(oracle[i]);
+            expect(revs[i].name).to.equal(oracle[i]);
         }
         });
     });
@@ -120,6 +119,15 @@ describe("git log info", () => {
                 expect(result.message).to.equal("modify testFunc");
                 expect(result.date).to.equal("Mon Dec 4 11:58:13 2017 +0900");
             }
+        });
+    });
+});
+
+describe("get first log", () => {
+    it ("get first log 1", () => {
+        const git = new GIT({kind: "git"});
+        git.getFirstLog(localRepoPath + "/test.js", (err: any, rev: string) => {
+            expect(rev).to.equal("f63f23910d6e185ac422468a64e897bb6e69f0a5");
         });
     });
 });

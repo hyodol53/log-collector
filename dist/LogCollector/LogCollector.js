@@ -29,7 +29,14 @@ var LogCollector = /** @class */ (function () {
         this.getLocalFileDiff(this._localPath, function (errDiff, diffStr) {
             if (errDiff === null) {
                 _this.collectLog(length, diffStr, function (err, revisions) {
-                    callback(err, revisions);
+                    _this.getRevisionInfos(localPath, revisions, function (err_revInfo, infos) {
+                        if (err === null) {
+                            callback(null, infos);
+                        }
+                        else {
+                            callback(err, []);
+                        }
+                    });
                 });
             }
             else {
@@ -38,8 +45,16 @@ var LogCollector = /** @class */ (function () {
         });
     };
     LogCollector.prototype.getNextLogWithRange = function (length, callback) {
+        var _this = this;
         this.collectLog(length, "", function (err, revisions) {
-            callback(err, revisions);
+            _this.getRevisionInfos(_this._localPath, revisions, function (err_revInfo, infos) {
+                if (err === null) {
+                    callback(null, infos);
+                }
+                else {
+                    callback(err, []);
+                }
+            });
         });
     };
     LogCollector.prototype.getLog = function (localPath, length, callback) {
@@ -62,54 +77,98 @@ var LogCollector = /** @class */ (function () {
             }
         });
     };
+    LogCollector.prototype.getRevisionInfos = function (localPath, revs, callback) {
+        var _this = this;
+        var orderMap = new Map();
+        var index = 0;
+        for (var _i = 0, revs_1 = revs; _i < revs_1.length; _i++) {
+            var rev = revs_1[_i];
+            orderMap.set(rev, index);
+            index++;
+        }
+        var revInfos = [];
+        revs.forEach(function (rev, i, array) {
+            _this.getRevisionInfo(localPath, rev, function (err, revInfo) {
+                if (revInfo !== null) {
+                    revInfos.push(revInfo);
+                }
+                else {
+                    callback(err, []);
+                }
+                if (revInfos.length === revs.length) {
+                    revInfos = revInfos.sort(function (a, b) {
+                        return orderMap.get(a.name) - orderMap.get(b.name);
+                    });
+                    callback(null, revInfos);
+                }
+            });
+        });
+    };
     LogCollector.prototype.getLocalFileDiff = function (localPath, callback) {
         this._scm.getLocalFileDiff(localPath, function (err, diffStr) {
             callback(err, diffStr);
         });
     };
+    LogCollector.prototype.getFirstLog = function (localPath, callback) {
+        this._scm.getFirstLog(localPath, function (err, rev) {
+            if (err !== null) {
+                callback(err, "");
+            }
+            else {
+                callback(null, rev);
+            }
+        });
+    };
     LogCollector.prototype.collectLog = function (length, localDiff, callback) {
         var _this = this;
         var tasks = [
-            function (collect_diff_callback) {
-                _this.getLog(_this._localPath, length, function (err, revs) {
-                    collect_diff_callback(err, revs);
+            function (first_log_callback) {
+                _this.getFirstLog(_this._localPath, function (err, rev) {
+                    first_log_callback(err, rev);
                 });
             },
-            function (revs, collect_changed_rev_callback) {
+            function (firstLog, collect_diff_callback) {
+                _this.getLog(_this._localPath, length, function (err, revs) {
+                    collect_diff_callback(err, firstLog, revs);
+                });
+            },
+            function (firstLog, revs, collect_changed_rev_callback) {
                 var revLength = revs.length;
                 var revArray = [];
                 var diffsByRev = new Map();
                 var _loop_1 = function (rev) {
-                    _this.getDiff(_this._localPath, rev, function (err, diffStr) {
-                        if (err === null) {
-                            diffsByRev.set(rev, diffStr);
-                            if (diffsByRev.size === revLength) {
-                                if (localDiff !== "") {
-                                    revs.unshift("-1");
-                                    diffsByRev.set("-1", localDiff);
+                    if (rev === firstLog) {
+                        revs.splice(revs.length - 1, 1);
+                        revLength--;
+                    }
+                    else {
+                        _this.getDiff(_this._localPath, rev, function (err, diffStr) {
+                            if (err === null) {
+                                diffsByRev.set(rev, diffStr);
+                                if (diffsByRev.size === revLength) {
+                                    if (localDiff !== "") {
+                                        revs.unshift("-1");
+                                        diffsByRev.set("-1", localDiff);
+                                    }
+                                    collect_changed_rev_callback(null, revs, diffsByRev);
                                 }
-                                collect_changed_rev_callback(null, revs, diffsByRev);
                             }
-                        }
-                        else if (diffStr !== "") {
-                            collect_changed_rev_callback(err, "");
-                        }
-                        else {
-                            revs.splice(revs.length - 1, 1);
-                            revLength--;
-                        }
-                    });
+                            else {
+                                collect_changed_rev_callback(err, "");
+                            }
+                        });
+                    }
                 };
-                for (var _i = 0, revs_1 = revs; _i < revs_1.length; _i++) {
-                    var rev = revs_1[_i];
+                for (var _i = 0, revs_2 = revs; _i < revs_2.length; _i++) {
+                    var rev = revs_2[_i];
                     _loop_1(rev);
                 }
             },
             function (revs, diffsByRev, return_callback) {
                 var prevRevision = _this._currentRevision;
                 var changedRevs = [];
-                for (var _i = 0, revs_2 = revs; _i < revs_2.length; _i++) {
-                    var rev = revs_2[_i];
+                for (var _i = 0, revs_3 = revs; _i < revs_3.length; _i++) {
+                    var rev = revs_3[_i];
                     var range = _this.getPreviousSourceRange(prevRevision);
                     if (range.isNull()) {
                         break;

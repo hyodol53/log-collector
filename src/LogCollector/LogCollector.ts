@@ -29,7 +29,7 @@ export default class LogCollector {
     }
 
     public getLogWithRange(localPath: string, range: SimpleRange, length: number ,
-                           callback: (err: string|null, revisions: string[]) => void ) {
+                           callback: (err: string|null, revisions: RevisionInfo[]) => void ) {
         this._currentRevision = "-1";
         this._revInfo = new Map<string, SourceRange>();
         this._localSourceRange = new SourceRange(range.startLine, range.endLine);
@@ -37,16 +37,28 @@ export default class LogCollector {
         this.getLocalFileDiff(this._localPath, (errDiff: string|null, diffStr: string) => {
             if ( errDiff === null ) {
                 this.collectLog(length, diffStr, (err: string|null, revisions: string[]) => {
-                    callback(err, revisions);
+                    this.getRevisionInfos(localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
+                        if ( err === null ) {
+                            callback(null, infos);
+                        } else {
+                            callback(err, []);
+                        }
+                    });
                 });
             } else {
                 callback(errDiff, []);
             }
         });
     }
-    public getNextLogWithRange(length: number, callback: (err: string|null, revisions: string[]) => void ) {
+    public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ) {
         this.collectLog(length, "", (err: string|null, revisions: string[]) => {
-            callback(err, revisions);
+            this.getRevisionInfos(this._localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
+                if ( err === null ) {
+                    callback(null, infos);
+                } else {
+                    callback(err, []);
+                }
+            });
         });
     }
 
@@ -74,41 +86,84 @@ export default class LogCollector {
         });
     }
 
+    private getRevisionInfos( localPath: string, revs: string[],
+                              callback: ( err: string|null, revInfo: RevisionInfo[] ) => void) {
+        const orderMap: Map<string, number> = new Map<string, number>();
+        let index = 0;
+        for ( const rev of revs) {
+            orderMap.set(rev, index);
+            index++;
+        }
+        let revInfos: RevisionInfo[] = [];
+        revs.forEach( (rev, i, array) => {
+            this.getRevisionInfo(localPath, rev, (err: any, revInfo: RevisionInfo|null) => {
+                if ( revInfo !== null ) {
+                    revInfos.push(revInfo);
+                } else {
+                    callback(err, []);
+                }
+                if ( revInfos.length === revs.length ) {
+                    revInfos = revInfos.sort( (a: RevisionInfo, b: RevisionInfo): number => {
+                        return (orderMap.get(a.name) as number) - (orderMap.get(b.name) as number);
+                    });
+                    callback(null, revInfos);
+                }
+            });
+        });
+    }
+
     private getLocalFileDiff(localPath: string, callback: (err: string|null, diffStr: string) => void): void {
         this._scm.getLocalFileDiff(localPath, (err: string|null, diffStr: string ) => {
             callback(err, diffStr);
         });
     }
 
+    private getFirstLog(localPath: string, callback: (err: string|null, rev: string) => void): void {
+        this._scm.getFirstLog(localPath, (err: any, rev: string) => {
+            if ( err !== null ) {
+                callback(err, "");
+            } else {
+                callback(null, rev);
+            }
+        });
+    }
+
     private collectLog(length: number, localDiff: string, callback: (err: string|null, revisions: string[]) => void) {
         const tasks = [
-            (collect_diff_callback: any) => {
-                this.getLog(this._localPath, length, (err: string|null, revs: string[]) => {
-                    collect_diff_callback(err, revs);
+            (first_log_callback: any) => {
+                this.getFirstLog(this._localPath, (err: any, rev: string ) => {
+                    first_log_callback(err, rev);
                 });
             },
-            (revs: string[], collect_changed_rev_callback: any) => {
+            (firstLog: string, collect_diff_callback: any) => {
+                this.getLog(this._localPath, length, (err: string|null, revs: string[]) => {
+                    collect_diff_callback(err, firstLog, revs);
+                });
+            },
+            (firstLog: string, revs: string[], collect_changed_rev_callback: any) => {
                 let revLength: number = revs.length;
                 const revArray: string[] = [];
                 const diffsByRev: Map<string, string> = new Map<string, string>();
                 for ( const rev of revs ) {
-                    this.getDiff(this._localPath, rev, (err: string|null, diffStr: string) => {
-                        if ( err === null ) {
-                            diffsByRev.set(rev, diffStr);
-                            if ( diffsByRev.size === revLength) {
-                                if ( localDiff !== "" ) {
-                                    revs.unshift("-1");
-                                    diffsByRev.set("-1", localDiff);
+                    if ( rev === firstLog ) {
+                        revs.splice(revs.length - 1, 1);
+                        revLength--;
+                    } else {
+                        this.getDiff(this._localPath, rev, (err: string|null, diffStr: string) => {
+                            if ( err === null ) {
+                                diffsByRev.set(rev, diffStr);
+                                if ( diffsByRev.size === revLength) {
+                                    if ( localDiff !== "" ) {
+                                        revs.unshift("-1");
+                                        diffsByRev.set("-1", localDiff);
+                                    }
+                                    collect_changed_rev_callback(null, revs, diffsByRev);
                                 }
-                                collect_changed_rev_callback(null, revs, diffsByRev);
+                            } else {
+                                collect_changed_rev_callback(err, "");
                             }
-                        } else if (diffStr !== "") {
-                            collect_changed_rev_callback(err, "");
-                        } else {
-                            revs.splice(revs.length - 1, 1);
-                            revLength--;
-                        }
-                    });
+                        });
+                    }
                 }
             },
             (revs: string[], diffsByRev: Map<string, string>, return_callback: any) => {

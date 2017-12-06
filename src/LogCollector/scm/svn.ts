@@ -44,6 +44,23 @@ export default class SVN extends SCM {
             }
         });
     }
+    public getFirstLog(localPath: string,
+                       callback: (err: string|null, rev: string) => void) {
+        this.getRepositoryPath(localPath, (repoPath: string) => {
+            if ( repoPath === "" ) {
+                callback("Could not get Repository Path", "");
+            } else {
+                this._spawnClient.getLog(["-r", "1:HEAD", "--limit", "1", repoPath], (err: SVNError, data: any) => {
+                    if ( err === null) {
+                        const logDatas: LogData = data[0];
+                        callback(null, logDatas.$.revision);
+                    } else {
+                        callback(err.message, "");
+                    }
+                });
+            }
+        });
+    }
     public getDiff(localPath: string, revision: string,
                    callback: (errMsg: string|null, diffStr: string) => void) {
         this.getRepositoryPath(localPath, (repoPath: string) => {

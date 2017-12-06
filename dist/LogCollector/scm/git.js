@@ -44,6 +44,22 @@ var GIT = /** @class */ (function (_super) {
             }
         });
     };
+    GIT.prototype.getFirstLog = function (localPath, callback) {
+        var baseDir = this.getMainPath(localPath);
+        if (baseDir === "") {
+            callback("Could not get git base dir", "");
+        }
+        var git = new SimpleGit(path.resolve(baseDir, ".."));
+        git.log(["--reverse", "--pretty=oneline", localPath], function (err, result) {
+            if (err !== null) {
+                callback(err, "");
+            }
+            else {
+                var hashs = result.all[0].hash;
+                callback(null, hashs.substr(0, hashs.indexOf(" ")));
+            }
+        });
+    };
     GIT.prototype.getRevisionInfo = function (localPath, revName, callback) {
         var _this = this;
         var baseDir = this.getMainPath(localPath);

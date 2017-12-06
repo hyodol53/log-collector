@@ -54,6 +54,25 @@ var SVN = /** @class */ (function (_super) {
             }
         });
     };
+    SVN.prototype.getFirstLog = function (localPath, callback) {
+        var _this = this;
+        this.getRepositoryPath(localPath, function (repoPath) {
+            if (repoPath === "") {
+                callback("Could not get Repository Path", "");
+            }
+            else {
+                _this._spawnClient.getLog(["-r", "1:HEAD", "--limit", "1", repoPath], function (err, data) {
+                    if (err === null) {
+                        var logDatas = data[0];
+                        callback(null, logDatas.$.revision);
+                    }
+                    else {
+                        callback(err.message, "");
+                    }
+                });
+            }
+        });
+    };
     SVN.prototype.getDiff = function (localPath, revision, callback) {
         var _this = this;
         this.getRepositoryPath(localPath, function (repoPath) {

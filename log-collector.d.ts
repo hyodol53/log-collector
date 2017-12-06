@@ -1,8 +1,8 @@
 declare namespace Log {
     class LogCollector {
         constructor(_client: ClientInfo);
-        public getLogWithRange(localPath: string, range: SimpleRange, length: number , callback: (err: string|null, revisions: string[]) => void ): void;
-        public getNextLogWithRange(length: number, callback: (err: string|null, revisions: string[]) => void ): void;
+        public getLogWithRange(localPath: string, range: SimpleRange, length: number , callback: (err: string|null, revisions: RevisionInfo[]) => void ): void;
+        public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ): void;
         public getLog(localPath: string, length: number, callback: (err: string|null, revisions: string[]) => void): void;
         public getDiff(localPath: string, revision: string, callback: (err: string|null, diffStr: string) => void): void;
         public getRevisionInfo(localPath: string, revision: string, callback: (err: string|null, revInfo: RevisionInfo) => void): void;
