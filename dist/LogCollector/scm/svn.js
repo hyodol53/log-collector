@@ -31,6 +31,27 @@ var SVN = /** @class */ (function (_super) {
         _this._repoPathInfo = new Map();
         return _this;
     }
+    SVN.checkAccount = function (url, name, pw, callback) {
+        var svn = new Client({
+            cwd: "",
+            noAuthCache: true,
+            password: pw,
+            username: name,
+        });
+        try {
+            svn.cmd(["info", url, "--non-interactive"], function (err, result) {
+                if (err === null) {
+                    callback(true);
+                }
+                else {
+                    callback(false);
+                }
+            });
+        }
+        catch (e) {
+            callback(false);
+        }
+    };
     SVN.prototype.getLog = function (localPath, length, callback) {
         var _this = this;
         this.getRepositoryPath(localPath, function (repoPath) {

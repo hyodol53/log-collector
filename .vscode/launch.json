@@ -22,10 +22,9 @@
                     "${workspaceRoot}/dist/**/*.js"
                 ],
                 "preLaunchTask": "RebuildTypeScript",
-                "program": "${workspaceRoot}/src/hello.ts",
+                "program": "${workspaceRoot}/src/test/test2.ts",
                 "cwd":"${workspaceRoot}",               
                 "sourceMaps": true
             }
-            
         ]
     }

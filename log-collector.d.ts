@@ -1,5 +1,6 @@
-declare namespace Log {
-    class LogCollector {
+declare module 'log-collector' {
+    export class LogCollector {
+        public static getSCMKind(localPath: string): string;
         constructor(_client: ClientInfo);
         public getLogWithRange(localPath: string, range: SimpleRange, length: number , callback: (err: string|null, revisions: RevisionInfo[]) => void ): void;
         public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ): void;
@@ -8,27 +9,25 @@ declare namespace Log {
         public getRevisionInfo(localPath: string, revision: string, callback: (err: string|null, revInfo: RevisionInfo) => void): void;
     }
     
-    class SimpleRange {
+    export class SimpleRange {
         public startLine: number;
         public endLine: number;
     }
     
-    class ClientInfo {
+    export class ClientInfo {
         public kind: string;
         public username?: string;
         public password?: string;
     }
 
-    class RevisionInfo {
+    export class RevisionInfo {
         public name: string;
         public author: string;
         public message: string;
         public date: string;
         public diff: string;
     }
-}
 
-declare module 'log-collector' {
-    const logCollector: typeof Log.LogCollector;
-    export = logCollector;   
+    export function getSCMKind(localPath: string) : string;
+    export function checkSvnAccount(url: string, name: string, pw: string, callback: (isSuccess: boolean) => void) : void;
 }

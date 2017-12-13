@@ -3,7 +3,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var async = require("async");
 var Translator_1 = require("./Translator");
 var SourceRange_1 = require("./SourceRange");
-var scm_1 = require("./scm/scm");
 var svn_1 = require("./scm/svn");
 var git_1 = require("./scm/git");
 var diffParser = require("diffParser");
@@ -17,65 +16,87 @@ var LogCollector = /** @class */ (function () {
             this._scm = new git_1.default(_client);
         }
     }
-    LogCollector.getSCMKind = function (localPath) {
-        return scm_1.default.getSCMKind(localPath);
-    };
     LogCollector.prototype.getLogWithRange = function (localPath, range, length, callback) {
         var _this = this;
         this._currentRevision = "-1";
         this._revInfo = new Map();
         this._localSourceRange = new SourceRange_1.default(range.startLine, range.endLine);
         this._localPath = localPath;
-        this.getLocalFileDiff(this._localPath, function (errDiff, diffStr) {
-            if (errDiff === null) {
-                _this.collectLog(length, diffStr, function (err, revisions) {
-                    _this.getRevisionInfos(localPath, revisions, function (err_revInfo, infos) {
-                        if (err === null) {
-                            callback(null, infos);
-                        }
-                        else {
-                            callback(err, []);
-                        }
+        try {
+            this.getLocalFileDiff(this._localPath, function (errDiff, diffStr) {
+                if (errDiff === null) {
+                    _this.collectLog(length, diffStr, function (err, revisions) {
+                        _this.getRevisionInfos(localPath, revisions, function (err_revInfo, infos) {
+                            if (err === null) {
+                                callback(null, infos);
+                            }
+                            else {
+                                callback(err, []);
+                            }
+                        });
                     });
-                });
-            }
-            else {
-                callback(errDiff, []);
-            }
-        });
+                }
+                else {
+                    callback(errDiff, []);
+                }
+            });
+        }
+        catch (e) {
+            callback(e, []);
+        }
     };
     LogCollector.prototype.getNextLogWithRange = function (length, callback) {
         var _this = this;
-        this.collectLog(length, "", function (err, revisions) {
-            _this.getRevisionInfos(_this._localPath, revisions, function (err_revInfo, infos) {
-                if (err === null) {
-                    callback(null, infos);
-                }
-                else {
-                    callback(err, []);
-                }
+        try {
+            this.collectLog(length, "", function (err, revisions) {
+                _this.getRevisionInfos(_this._localPath, revisions, function (err_revInfo, infos) {
+                    if (err === null) {
+                        callback(null, infos);
+                    }
+                    else {
+                        callback(err, []);
+                    }
+                });
             });
-        });
+        }
+        catch (e) {
+            callback(e, []);
+        }
     };
     LogCollector.prototype.getLog = function (localPath, length, callback) {
-        this._scm.getLog(localPath, length, function (err, revs) {
-            callback(err, revs);
-        });
+        try {
+            this._scm.getLog(localPath, length, function (err, revs) {
+                callback(err, revs);
+            });
+        }
+        catch (e) {
+            callback(e, []);
+        }
     };
     LogCollector.prototype.getDiff = function (localPath, revision, callback) {
-        this._scm.getDiff(localPath, revision, function (err, diffStr) {
-            callback(err, diffStr);
-        });
+        try {
+            this._scm.getDiff(localPath, revision, function (err, diffStr) {
+                callback(err, diffStr);
+            });
+        }
+        catch (e) {
+            callback(e, "");
+        }
     };
     LogCollector.prototype.getRevisionInfo = function (localPath, revision, callback) {
-        this._scm.getRevisionInfo(localPath, revision, function (err, revInfo) {
-            if (err !== null) {
-                callback(err, null);
-            }
-            else {
-                callback(null, revInfo);
-            }
-        });
+        try {
+            this._scm.getRevisionInfo(localPath, revision, function (err, revInfo) {
+                if (err !== null) {
+                    callback(err, null);
+                }
+                else {
+                    callback(null, revInfo);
+                }
+            });
+        }
+        catch (e) {
+            callback(e, null);
+        }
     };
     LogCollector.prototype.getRevisionInfos = function (localPath, revs, callback) {
         var _this = this;

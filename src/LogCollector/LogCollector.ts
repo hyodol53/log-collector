@@ -11,10 +11,6 @@ import GIT from "./scm/git";
 import * as diffParser from "diffParser";
 
 export default class LogCollector {
-    public static getSCMKind(localPath: string) {
-        return SCM.getSCMKind(localPath);
-    }
-
     private _scm: SCM;
     private _revInfo: Map<string, SourceRange>;
     private _currentRevision: string;
@@ -34,56 +30,77 @@ export default class LogCollector {
         this._revInfo = new Map<string, SourceRange>();
         this._localSourceRange = new SourceRange(range.startLine, range.endLine);
         this._localPath = localPath;
-        this.getLocalFileDiff(this._localPath, (errDiff: string|null, diffStr: string) => {
-            if ( errDiff === null ) {
-                this.collectLog(length, diffStr, (err: string|null, revisions: string[]) => {
-                    this.getRevisionInfos(localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
-                        if ( err === null ) {
-                            callback(null, infos);
-                        } else {
-                            callback(err, []);
-                        }
+        try {
+            this.getLocalFileDiff(this._localPath, (errDiff: string|null, diffStr: string) => {
+                if ( errDiff === null ) {
+                    this.collectLog(length, diffStr, (err: string|null, revisions: string[]) => {
+                        this.getRevisionInfos(localPath, revisions,
+                                              (err_revInfo: string|null, infos: RevisionInfo[]) => {
+                            if ( err === null ) {
+                                callback(null, infos);
+                            } else {
+                                callback(err, []);
+                            }
+                        });
                     });
-                });
-            } else {
-                callback(errDiff, []);
-            }
-        });
-    }
-    public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ) {
-        this.collectLog(length, "", (err: string|null, revisions: string[]) => {
-            this.getRevisionInfos(this._localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
-                if ( err === null ) {
-                    callback(null, infos);
                 } else {
-                    callback(err, []);
+                    callback(errDiff, []);
                 }
             });
-        });
+        } catch (e) {
+            callback(e, []);
+        }
+    }
+    public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ) {
+        try{
+            this.collectLog(length, "", (err: string|null, revisions: string[]) => {
+                this.getRevisionInfos(this._localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
+                    if ( err === null ) {
+                        callback(null, infos);
+                    } else {
+                        callback(err, []);
+                    }
+                });
+            });
+        } catch (e) {
+            callback(e, []);
+        }
     }
 
     public getLog(localPath: string, length: number,
                   callback: (err: string|null, revisions: string[]) => void): void {
-        this._scm.getLog(localPath, length, (err: string|null, revs: string[] ) => {
-            callback(err, revs);
-        });
+        try {
+            this._scm.getLog(localPath, length, (err: string|null, revs: string[] ) => {
+                callback(err, revs);
+            });
+        } catch (e) {
+            callback(e, []);
+        }
     }
 
     public getDiff(localPath: string, revision: string, callback: (err: string|null, diffStr: string) => void): void {
-        this._scm.getDiff(localPath, revision, (err: string|null, diffStr: string ) => {
-            callback(err, diffStr);
-        });
+        try {
+            this._scm.getDiff(localPath, revision, (err: string|null, diffStr: string ) => {
+                callback(err, diffStr);
+            });
+        } catch (e) {
+            callback(e, "");
+        }
     }
 
     public getRevisionInfo(localPath: string, revision: string,
                            callback: (err: string|null, revInfo: RevisionInfo|null) => void ): void {
-        this._scm.getRevisionInfo(localPath, revision, (err: any, revInfo: RevisionInfo|null) => {
-            if ( err !== null ) {
-                callback(err, null);
-            } else {
-                callback(null, revInfo);
-            }
-        });
+        try {
+            this._scm.getRevisionInfo(localPath, revision, (err: any, revInfo: RevisionInfo|null) => {
+                if ( err !== null ) {
+                    callback(err, null);
+                } else {
+                    callback(null, revInfo);
+                }
+            });
+        } catch (e) {
+            callback(e, null);
+        }
     }
 
     private getRevisionInfos( localPath: string, revs: string[],

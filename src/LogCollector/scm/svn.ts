@@ -8,6 +8,27 @@ import * as Util from "../util/util";
 import RevisionInfo from "../RevisionInfo";
 
 export default class SVN extends SCM {
+    public static checkAccount(url: string, name: string, pw: string,
+                               callback: (isSuccess: boolean) => void) {
+        const svn = new Client({
+            cwd: "",
+            noAuthCache: true,
+            password: pw,
+            username: name,
+        });
+        try {
+            svn.cmd(["info", url, "--non-interactive"], (err: SVNError, result: any) => {
+                if ( err === null ) {
+                    callback(true);
+                } else {
+                    callback(false);
+                }
+            });
+        } catch (e) {
+            callback(false);
+        }
+    }
+
     private _spawnClient: SvnSpawn.Client;
     private _repoPathInfo: Map<string, string>;
     private _rootURL: string;
