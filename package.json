@@ -1,8 +1,9 @@
 {
   "name": "log-collector",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "./dist/index.js",
+  "types" : "./dist/index.d.ts",
   "dependencies": {
     "diffparser": "^2.0.0",
     "simple-git": "^1.82.0",
@@ -25,6 +26,8 @@
     "node": ">= 6.11.2"
   },
   "scripts": {
+    "run" : "ts-node .src/index.ts",
+    "prepublishOnly" : "tsc -p ./ --outDir dist/",
     "start": "node ./dist/test/test.js",
     "transpile": "tsc",
     "test": "mocha -r ts-node/register src/test/test.ts"
