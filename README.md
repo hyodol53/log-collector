@@ -9,45 +9,34 @@ npm install log-collector
 
 # usage
 
-javascript
 ```javascript
-var logCollector = require("log-collector");
-var gitorsvn = new logCollector({ username:"name", password:"pw", kind: "git or svn"});
+var Log = require("log-collector");
+var gitorsvn = new Log.LogCollector({ username:"name", password:"pw", kind: "git or svn"});
 
 gitorsvn.getLogWithRange("localpath", { startLine: 51, endLine: 57 }, 100, function (err, revs) {
-    if (err !== null) {
-        console.log(err);
-    }
-    else {
-        console.log(revs);
-    }
+    var diffStr = revs[0].diff;
+    var message = revs[0].message;
+    var author = revs[0].author;
+    var revisionNumber = revs[0].name;
+    var date = revs[0].date;
 });
 
-getorsvn.getRevisionInfo("local path", "revision number", (err , revInfo) => {
-    // get author, date, message, diff from revInfo
+gitorsvn.getNextLogWithRange(50, , function(err, rev) {
+    
 });
+
+
+var res1 = Log.getSCMKind("git localfilePath"); // return "git"
+var res2 = Log.getSCMKind("svn localfilePath"); // return "svn"
+
+var res = Log.checkSvnAccount("url", "name", "password") // return true if svn account is valid
+
 
 ```
 
-typescript
-
-* you have to move "node_modules/log-collector/log-collector.d.ts" to your own '@types' directory
-```typescript
-import * as LogCollector from "log-collector";
-
-const gitorsvn = new logCollector({username: "id", password: "pw", kind: "git or svn"});
-
-gitorsvn.getLogWithRange("local path", {startLine: 51, endLine: 57}, 100, (err: string|null, revs: string[]) => {
-    if ( err !== null ) {
-        // error
-    } else {
-        // get list of revesion number(svn) or SHA-1(git)
-    }
-});
-
-getorsvn.getRevisionInfo("local path", "revision number", (err: string|null, revInfo: RevisionInfo) => {
-    // get author, date, message, diff from revInfo
-});
-
-```
-
+api  | description
+------------- | -------------
+.getLogWithRange(localPath, {startLine, endLine}, number, callback )  | From the last revision to the log of given length, get revision list collected when changed at given line of localPath
+.getNextLogWithRange(localPath, {startLine, endLine}, callback )  | Get revision list collected when changed at given line of localPath. The path and range are the last parameter values the function executed. The starting point of the revision to collect is the revision plus the length of the last function executed in the current revision.
+getSCMKind(localPath)  | Returns which scm the local file is linked to.
+checkSvnAccount  | Return true if svn account is valid
