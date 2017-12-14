@@ -21,7 +21,7 @@ gitorsvn.getLogWithRange("localpath", { startLine: 51, endLine: 57 }, 100, funct
     var date = revs[0].date;
 });
 
-gitorsvn.getNextLogWithRange(50, , function(err, rev) {
+gitorsvn.getNextLogWithRange(50, function(err, rev) {
     
 });
 
@@ -37,6 +37,6 @@ var res = Log.checkSvnAccount("url", "name", "password") // return true if svn a
 api  | description
 ------------- | -------------
 .getLogWithRange(localPath, {startLine, endLine}, number, callback )  | From the last revision to the log of given length, get revision list collected when changed at given line of localPath
-.getNextLogWithRange(localPath, {startLine, endLine}, callback )  | Get revision list collected when changed at given line of localPath. The path and range are the last parameter values the function executed. The starting point of the revision to collect is the revision plus the length of the last function executed in the current revision.
+.getNextLogWithRange(localPath, callback )  | Get revision list collected when changed at given line of localPath. The path and range are the last parameter values the function executed. The starting point of the revision to collect is the revision plus the length of the last function executed in the current revision.
 getSCMKind(localPath)  | Returns which scm the local file is linked to.
 checkSvnAccount  | Return true if svn account is valid
