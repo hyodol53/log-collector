@@ -27,11 +27,11 @@ var LogCollector = /** @class */ (function () {
                 if (errDiff === null) {
                     _this.collectLog(length, diffStr, function (err, revisions) {
                         _this.getRevisionInfos(localPath, revisions, function (err_revInfo, infos) {
-                            if (err === null) {
+                            if (err_revInfo === null) {
                                 callback(null, infos);
                             }
                             else {
-                                callback(err, []);
+                                callback(err_revInfo, []);
                             }
                         });
                     });
@@ -205,7 +205,7 @@ var LogCollector = /** @class */ (function () {
                     if (translatedRange.isNull()) {
                         break;
                     }
-                    if (translatedResult[1]) {
+                    if (rev !== "-1" && translatedResult[1]) {
                         changedRevs.push(rev);
                     }
                     prevRevision = rev;

@@ -56,7 +56,6 @@ export default class GIT extends SCM {
         if ( baseDir === "" ) {
             callback("Could not get git base dir", null);
         }
-
         const git = new SimpleGit(path.resolve(baseDir, ".."));
         git.show([revName], (err: any, info: any ) => {
             const revInfo = this.parseRevInfo(info, revName);
@@ -119,6 +118,6 @@ export default class GIT extends SCM {
         str = str.substr(date.length);
         let message: string = str.substr(0, str.indexOf("diff --git"));
         message = message.trim();
-        return new RevisionInfo(revName, author, message, date, "");
+        return new RevisionInfo(revName, author, message, date, ""); 
     }
 }

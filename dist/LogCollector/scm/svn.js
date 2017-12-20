@@ -188,7 +188,6 @@ var SVN = /** @class */ (function (_super) {
                 db_1.on("open", function () {
                     db_1.each(query_1, function (queryErr, row) {
                         if (queryErr === null) {
-                            _this._repoPathInfo.set(localPath, row.Path);
                             _this._rootURL = row.path;
                             callback(null, row.Path);
                         }

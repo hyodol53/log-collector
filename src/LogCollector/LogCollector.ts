@@ -36,10 +36,10 @@ export default class LogCollector {
                     this.collectLog(length, diffStr, (err: string|null, revisions: string[]) => {
                         this.getRevisionInfos(localPath, revisions,
                                               (err_revInfo: string|null, infos: RevisionInfo[]) => {
-                            if ( err === null ) {
+                            if ( err_revInfo === null ) {
                                 callback(null, infos);
                             } else {
-                                callback(err, []);
+                                callback(err_revInfo, []);
                             }
                         });
                     });
@@ -52,7 +52,7 @@ export default class LogCollector {
         }
     }
     public getNextLogWithRange(length: number, callback: (err: string|null, revisions: RevisionInfo[]) => void ) {
-        try{
+        try {
             this.collectLog(length, "", (err: string|null, revisions: string[]) => {
                 this.getRevisionInfos(this._localPath, revisions, (err_revInfo: string|null, infos: RevisionInfo[]) => {
                     if ( err === null ) {
@@ -202,7 +202,7 @@ export default class LogCollector {
                     if (translatedRange.isNull() ) {
                         break;
                     }
-                    if ( translatedResult[1] as boolean ) {
+                    if ( rev !== "-1" && translatedResult[1] as boolean ) {
                         changedRevs.push(rev);
                     }
                     prevRevision = rev;

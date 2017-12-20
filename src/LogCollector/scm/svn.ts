@@ -143,7 +143,7 @@ export default class SVN extends SCM {
                                 callback(errMsg, null);
                             } else {
                                 callback(errMsg,
-                                        new RevisionInfo(revName, logData.author, logData.msg, logData.date, diffStr));
+                                new RevisionInfo(revName, logData.author, logData.msg, logData.date, diffStr));
                             }
                         });
                     } else {
@@ -170,7 +170,6 @@ export default class SVN extends SCM {
                 db.on("open", () => {
                     db.each(query, (queryErr: any, row: any) => {
                         if ( queryErr === null ) {
-                            this._repoPathInfo.set(localPath, row.Path);
                             this._rootURL = row.path;
                             callback(null, row.Path);
                         } else {

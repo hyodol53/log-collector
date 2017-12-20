@@ -1,3 +1,5 @@
+import SimpleRange from "./SimpleRange";
+
 export default class RevisionInfo {
 
     constructor(public name: string,
